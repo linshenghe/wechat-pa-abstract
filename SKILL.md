@@ -72,7 +72,7 @@ For mixed Chinese and English in Word, set the western font to Times New Roman a
 
 When the user asks for a cover image, or asks to include the cover in the Word document, use the local PowerPoint template:
 
-- Template file: `封面模板.pptx` in the current workspace.
+- Template file: `assets/封面模板.pptx` bundled with this skill.
 - Cover output folder: `output/cover/`.
 - Final image file name: `WeChat Cover - [English title without unsafe filename characters].png`.
 - Use the English title as the only cover text.
@@ -80,7 +80,7 @@ When the user asks for a cover image, or asks to include the cover in the Word d
 
 Reliable procedure:
 
-1. Copy or generate a temporary PPTX from `封面模板.pptx`; never modify the original template.
+1. Copy or generate a temporary PPTX from `assets/封面模板.pptx`; never modify the original template.
 2. Insert the English title into the first slide title placeholder named `Title 1`.
 3. Preserve the placeholder's inherited template style. Do not force a black/white color scheme.
 4. Open the temporary PPTX in Microsoft PowerPoint and visually confirm the template is blue-gray, not black and white.
