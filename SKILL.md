@@ -21,6 +21,10 @@ The user provides pasted article information, usually including:
 
 If any essential item is missing, ask only for the missing item. Essential items are English title, authors, abstract, and citation.
 
+When asking for missing items, name only the missing fields in a short checklist. Do not ask the user to paste the whole article again if some fields are already present.
+
+If the user provides multiple articles in one message, treat them as separate manuscripts by default. Do not merge multiple articles into one manuscript unless the user explicitly asks for a combined document.
+
 ## Output Format
 
 For a short-summary manuscript, always use this fixed order and spacing:
@@ -79,22 +83,30 @@ Citation:
 
 If a cover image is generated, it is part of the final deliverable. Show or list the final PNG path in the response. If a Word manuscript is generated, insert the cover image at the beginning of the document before the English title.
 
+When delivering completed files, include a concise checklist in the final response: Word document path, cover PNG path if generated or requested, whether an email draft was provided, what validation was completed, and any unverified item with its reason.
+
 ## Translation Rules
 
 - Keep author names in English exactly as provided by the user or website.
 - Translate the title directly and academically.
 - Translate the abstract directly, keeping academic precision and professional wording.
 - Preserve the original English abstract after the Chinese abstract.
+- Before final delivery, self-check that terminology is consistent, author names remain untranslated, the citation is not lost, the Chinese abstract does not add claims absent from the English abstract, and the original English abstract remains complete.
 - If the article has Chinese authors, ask whether the user has an author-provided Chinese title or Chinese abstract. If provided, learn the authors' terminology choices and keep those translations consistent throughout the manuscript.
+- If the user provides an official or author-provided Chinese title or abstract, use it as authoritative wording. Do not rewrite it unless the user asks for polishing.
 - Do not make the wording promotional or casual.
 - Do not add interpretation, commentary, keywords, introductions, emojis, or extra sections unless the user asks.
 - Citation defaults to APA. If the user provides a citation from the website, preserve it unless it is clearly not APA and the user asked for APA conversion.
+- Do not infer missing DOI, publication date, issue, volume, page range, or author order from memory. Ask for the missing citation detail or state that it is unavailable in the provided text.
+- If the user asks for APA conversion, keep only information supported by the provided text or by a source the user explicitly asked Codex to open.
 
 ## Long Summary Workflow
 
 Use this workflow when the user asks for a long-summary version, extended abstract, long WeChat manuscript, or asks to process an article section by section.
 
-Do not require the user to provide the whole article at once. Process only the section currently provided. At the end of each step, ask for the next specific section by function, not generically:
+Do not require the user to provide the whole article at once. Process only the section currently provided. At the end of each step, ask for the next specific section by function, not generically.
+
+For long-summary work in the Social Media For Public Administration workspace, keep a temporary Markdown draft in `tmp/wechat-pa-drafts/` when the task spans multiple sections or turns. Use the same safe shortened title rule as Word filenames. Update the draft after each completed section so the work can resume without reconstructing prior sections from chat history.
 
 - After the opening abstract blocks, ask: `请给我第 1 部分“引言 / 研究背景”原文。`
 - After the introduction/background section, ask: `请给我第 2 部分“文献综述 / 理论与假设”原文；它不一定叫 Literature Review，请给我承担这个功能的那一部分。`
@@ -111,6 +123,7 @@ For every long-summary section:
 - Do not include the original full text.
 - Do not include references, author-year citations, footnotes, or table numbers in the condensed text.
 - Usually condense the section into 2-3 Chinese paragraphs; methods or results sections may be slightly longer if needed for clarity.
+- Do not turn long-summary work into a full translation, and do not compress a substantive section into a single sentence. When the original section is long, preserve the reasoning chain and key findings rather than attempting sentence-by-sentence coverage.
 - First understand or translate the original into Chinese, then condense from that Chinese understanding.
 - Preserve the original reasoning order. Do not reorganize the section into a generic guide such as background, question, contribution, method, and conclusion.
 - Preserve important content when it appears in the original reasoning flow, including research questions, contributions, hypotheses, variable definitions, findings, limitations, policy implications, and future research directions.
@@ -130,7 +143,10 @@ Section-specific rules:
 When the user asks for a Word document, use the `doc` skill and create a `.docx` manuscript with these rules:
 
 - File name: `WeChat Page Manuscript For "[English title]".docx`
+- When working in `/Users/linsheng/Desktop/Academic/PhD/Social Media For Public Administration`, use that workspace as the default output root. Do not create output folders elsewhere unless the user asks.
 - Preferred output folder in this workspace: `output/doc/`
+- Before writing the document, check whether the target file already exists. Do not silently overwrite. If it exists, create an ` (Updated)` filename unless the user explicitly asked to overwrite.
+- Keep filesystem names manageable: use a safe filename made from at most the first 100 characters of the English title. Preserve the complete English title inside the manuscript body.
 - Font: Chinese text uses Songti/宋体; English text uses Times New Roman.
 - Font size: 12 pt for all text.
 - Alignment: left aligned for all paragraphs.
@@ -139,7 +155,9 @@ When the user asks for a Word document, use the `doc` skill and create a `.docx`
 - Insert one manual blank line between every content block in the fixed output format.
 - If a cover image has been generated, insert it at the beginning of the Word document before the English title.
 
-For mixed Chinese and English in Word, set the western font to Times New Roman and the East Asian font to 宋体. After creating the document, verify by reading the `.docx` back and checking that the expected title, Chinese title, intro sentence, Citation label, and DOI or citation text are present.
+For mixed Chinese and English in Word, set the western font to Times New Roman and the East Asian font to 宋体. After creating the document, verify by reading the `.docx` back and checking that the expected title, Chinese title, intro sentence, Citation label, and DOI or citation text are present. Also verify that the document is not empty, has a plausible paragraph count for the requested manuscript type, and contains an embedded image when a cover was requested.
+
+Before delivery, remind the user if the Word document may contain sensitive metadata, comments, or tracked changes. When feasible, inspect generated documents for comments, tracked changes, and core document properties; do not remove user-authored metadata from pre-existing files unless the user asks.
 
 ## Delivery Email Draft
 
@@ -183,7 +201,7 @@ When the user asks for a cover image, or asks to include the cover in the Word d
 
 - Template file: `assets/封面模板.pptx` bundled with this skill.
 - Cover output folder: `output/cover/`.
-- Final image file name: `WeChat Cover - [English title without unsafe filename characters].png`.
+- Final image file name: `WeChat Cover - [English title without unsafe filename characters].png`. Use at most the first 100 safe characters of the English title for the filename while keeping the full title as cover text.
 - Use the English title as the only cover text.
 - If the English title contains a colon or semicolon (`:`, `;`, `：`, `；`), insert a line break immediately after that punctuation in the cover text, while keeping the manuscript title itself unchanged.
 - Preserve the template's original blue-gray PowerPoint appearance.
@@ -198,7 +216,8 @@ Reliable procedure:
 6. Crop the screenshot to the visible slide canvas and save the final PNG in `output/cover/`.
 7. If the user requested a Word manuscript too, insert the final PNG at the top of the Word document.
 8. Close the temporary PowerPoint file after visual verification and final PNG creation.
-9. Delete temporary PPTX files, PowerPoint lock files, full-screen screenshots, Quick Look previews, and extracted media directories. Keep only the final PNG and final Word document unless the user asks to keep more.
+9. Delete only temporary files created during the current run, including temporary PPTX files, PowerPoint lock files, full-screen screenshots, Quick Look previews, and extracted media directories. Keep existing deliverables, old drafts, user files, the final PNG, and the final Word document unless the user asks to remove them.
+10. If PowerPoint, screenshot permissions, or visual verification fail, do not use Quick Look as an unverified substitute. Deliver the manuscript if it is complete, explain that cover generation was not verified, and list the exact command or permission issue that blocked it.
 
 Do not use `qlmanage` or Quick Look thumbnails for the final cover image. Quick Look can render this template incorrectly as black and white. Use PowerPoint's actual display plus screenshot/cropping, or another method that has been visually checked against PowerPoint.
 
