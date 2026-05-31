@@ -141,6 +141,42 @@ When the user asks for a Word document, use the `doc` skill and create a `.docx`
 
 For mixed Chinese and English in Word, set the western font to Times New Roman and the East Asian font to 宋体. After creating the document, verify by reading the `.docx` back and checking that the expected title, Chinese title, intro sentence, Citation label, and DOI or citation text are present.
 
+## Delivery Email Draft
+
+When the manuscript is complete and the user wants to reply to the assigning professor or sender, provide a short English email draft in the chat. Do not insert the email draft into the Word document or manuscript body.
+
+Use a slightly warm but still concise tone. Do not include the DOI or article link by default unless the user asks.
+
+For an extended translation, use:
+
+```text
+Dear Sarah,
+
+I hope you are doing well!
+
+I have completed the extended translation, and the file is attached here.
+
+Please let me know if there is anything you would like me to revise. Thank you!
+
+Best regards,
+Linsheng
+```
+
+For an abstract-only translation, use:
+
+```text
+Dear Sarah,
+
+I hope you are doing well!
+
+I have completed the abstract-only translation, and the file is attached here.
+
+Please let me know if there is anything you would like me to revise. Thank you!
+
+Best regards,
+Linsheng
+```
+
 ## Cover Image Workflow
 
 When the user asks for a cover image, or asks to include the cover in the Word document, use the local PowerPoint template. This workflow applies to both short-summary and long-summary manuscripts:
