@@ -7,7 +7,7 @@ description: Use when the user provides article metadata, abstract, citation tex
 
 ## Purpose
 
-Create short or long WeChat manuscript drafts for the Public Administration journal account from user-provided article information. The user supplies the article title, authors, abstract, DOI/citation, copied website text, or article sections; do not open the article webpage unless the user explicitly asks.
+Create short or long WeChat manuscript drafts for the Public Administration journal account from user-provided article information, delivered by default as a Word document with a title cover image. The user supplies the article title, authors, abstract, DOI/citation, copied website text, or article sections; do not open the article webpage unless the user explicitly asks.
 
 ## Default Input Assumption
 
@@ -26,6 +26,16 @@ When asking for missing items, name only the missing fields in a short checklist
 If the user provides multiple articles in one message, treat them as separate manuscripts by default. Do not merge multiple articles into one manuscript unless the user explicitly asks for a combined document.
 
 ## Output Format
+
+Default final deliverable:
+
+- Produce a `.docx` Word manuscript by default, even if the user only asks for a short-summary or long-summary version.
+- Generate a title cover image by default and insert it at the beginning of the Word document before the English title.
+- The title cover image must be generated strictly from the local PowerPoint template and verified through Microsoft PowerPoint's actual display. Do not use generated, hand-drawn, PIL-created, HTML-rendered, Keynote-rendered, Quick Look-rendered, or otherwise simulated substitute cover images.
+- The manuscript body inside the Word document must still follow the fixed block order below.
+- Also list the final Word document path and cover PNG path in the final response.
+- Only provide chat-only text instead of files when the user explicitly asks for text only, draft only, or no Word document.
+- If the required Word document or PowerPoint-derived title cover image cannot be produced or verified exactly as specified, stop and ask the user how to proceed. Do not deliver a partial file as if the task is complete.
 
 For a short-summary manuscript, always use this fixed order and spacing:
 
@@ -81,9 +91,9 @@ Citation:
 [English condensed text matching the Chinese condensed text]
 ```
 
-If a cover image is generated, it is part of the final deliverable. Show or list the final PNG path in the response. If a Word manuscript is generated, insert the cover image at the beginning of the document before the English title.
+The cover image is part of the final deliverable. Show or list the final PNG path in the response and insert the cover image at the beginning of the Word document before the English title. The final Word document is not complete until the verified PowerPoint-derived cover image is embedded.
 
-When delivering completed files, include a concise checklist in the final response: Word document path, cover PNG path if generated or requested, whether an email draft was provided, what validation was completed, and any unverified item with its reason.
+When delivering completed files, include a concise checklist in the final response: Word document path, cover PNG path, whether an email draft was provided, and what validation was completed. There should be no unverified required item in a completed delivery; if a required item is unverified, stop and ask the user instead.
 
 ## Translation Rules
 
@@ -140,7 +150,7 @@ Section-specific rules:
 
 ## Word Document Workflow
 
-When the user asks for a Word document, use the `doc` skill and create a `.docx` manuscript with these rules:
+Use the `doc` skill and create a `.docx` manuscript by default with these rules:
 
 - File name: `WeChat Page Manuscript For "[English title]".docx`
 - When working in `/Users/linsheng/Desktop/Academic/PhD/Social Media For Public Administration`, use that workspace as the default output root. Do not create output folders elsewhere unless the user asks.
@@ -153,9 +163,9 @@ When the user asks for a Word document, use the `doc` skill and create a `.docx`
 - Paragraph spacing: 0 before and 0 after.
 - Line spacing: single line.
 - Insert one manual blank line between every content block in the fixed output format.
-- If a cover image has been generated, insert it at the beginning of the Word document before the English title.
+- Insert the verified PowerPoint-derived cover image at the beginning of the Word document before the English title.
 
-For mixed Chinese and English in Word, set the western font to Times New Roman and the East Asian font to 宋体. After creating the document, verify by reading the `.docx` back and checking that the expected title, Chinese title, intro sentence, Citation label, and DOI or citation text are present. Also verify that the document is not empty, has a plausible paragraph count for the requested manuscript type, and contains an embedded image when a cover was requested.
+For mixed Chinese and English in Word, set the western font to Times New Roman and the East Asian font to 宋体. After creating the document, verify by reading the `.docx` back and checking that the expected title, Chinese title, intro sentence, Citation label, and DOI or citation text are present. Also verify that the document is not empty, has a plausible paragraph count for the requested manuscript type, and contains exactly the verified PowerPoint-derived embedded cover image.
 
 Before delivery, remind the user if the Word document may contain sensitive metadata, comments, or tracked changes. When feasible, inspect generated documents for comments, tracked changes, and core document properties; do not remove user-authored metadata from pre-existing files unless the user asks.
 
@@ -197,36 +207,58 @@ Linsheng
 
 ## Cover Image Workflow
 
-When the user asks for a cover image, or asks to include the cover in the Word document, use the local PowerPoint template. This workflow applies to both short-summary and long-summary manuscripts:
+Generate a cover image by default and include it in the Word document. This is a strict workflow: use the local PowerPoint template and Microsoft PowerPoint's actual display only. This workflow applies to both short-summary and long-summary manuscripts:
 
 - Template file: `assets/封面模板.pptx` bundled with this skill.
 - Cover output folder: `output/cover/`.
 - Final image file name: `WeChat Cover - [English title without unsafe filename characters].png`. Use at most the first 100 safe characters of the English title for the filename while keeping the full title as cover text.
-- Use the English title as the only cover text.
-- If the English title contains a colon or semicolon (`:`, `;`, `：`, `；`), insert a line break immediately after that punctuation in the cover text, while keeping the manuscript title itself unchanged.
+- Use the uppercased English title as the only cover text. Keep the manuscript title itself in its original capitalization.
+- If the English title contains a colon or semicolon (`:`, `;`, `：`, `；`), insert a PowerPoint soft line break immediately after that punctuation in the cover text. Use a vertical tab (`character id 11`), not a paragraph break, so the template does not add paragraph spacing.
 - Preserve the template's original blue-gray PowerPoint appearance.
+- Do not create a visual replacement from scratch, approximate the template, render the slide through Quick Look, or use another presentation app unless the user explicitly approves a changed workflow after being told the strict workflow is blocked.
 
 Reliable procedure:
 
-1. Copy or generate a temporary PPTX from `assets/封面模板.pptx`; never modify the original template.
-2. Insert the English title into the first slide title placeholder named `Title 1`.
-3. Preserve the placeholder's inherited template style. Do not force a black/white color scheme.
-4. Open the temporary PPTX in Microsoft PowerPoint and visually confirm the template is blue-gray, not black and white.
-5. Use `screencapture` to capture the PowerPoint screen after permissions are available.
-6. Crop the screenshot to the visible slide canvas and save the final PNG in `output/cover/`.
-7. If the user requested a Word manuscript too, insert the final PNG at the top of the Word document.
-8. Close the temporary PowerPoint file after visual verification and final PNG creation.
-9. Delete only temporary files created during the current run, including temporary PPTX files, PowerPoint lock files, full-screen screenshots, Quick Look previews, and extracted media directories. Keep existing deliverables, old drafts, user files, the final PNG, and the final Word document unless the user asks to remove them.
-10. If PowerPoint, screenshot permissions, or visual verification fail, do not use Quick Look as an unverified substitute. Deliver the manuscript if it is complete, explain that cover generation was not verified, and list the exact command or permission issue that blocked it.
+1. Copy `assets/封面模板.pptx` to a temporary PPTX; never modify the original template.
+2. Open the temporary PPTX in Microsoft PowerPoint before inserting the title.
+3. Write the uppercased title into the first-slide placeholder named `Title 1` through PowerPoint's `text range` object model. Do not use `python-pptx`, `shape.text`, direct OOXML editing, clipboard paste, or simulated keyboard typing to populate the title; these methods can discard or override the inherited template style.
+4. Use a PowerPoint soft line break (`character id 11`) after each colon or semicolon. Do not create a second paragraph.
+5. Preserve and visually confirm the inherited title style: blue, uppercase, bold sans-serif, horizontally centered, vertically centered, and sized to fit inside the title area. The template must remain blue-gray, not black and white.
+6. Compare the PowerPoint view with the most recent correct cover in `output/cover/`, when one exists. Confirm that title color, font family, weight, capitalization, scale, alignment, background placement, and lower-right circular mark follow the same visual pattern.
+7. Use `screencapture` to capture the PowerPoint screen after permissions are available.
+8. Crop the screenshot to the visible slide canvas and save the final PNG in `output/cover/`.
+9. Insert the final PNG at the top of the Word document.
+10. Open the completed Word document in Microsoft Word and confirm that the embedded cover matches the verified PNG.
+11. Close the temporary PowerPoint file after visual verification and final PNG creation.
+12. Delete only temporary files created during the current run, including temporary PPTX files, PowerPoint lock files, full-screen screenshots, Quick Look previews, and extracted media directories. Keep existing deliverables, old drafts, user files, the final PNG, and the final Word document unless the user asks to remove them.
+13. If PowerPoint, title insertion through the object model, screenshot permissions, frontmost-window control, crop validation, document image insertion, file overwrite checks, or visual verification fail, stop and ask the user how to proceed. Do not use Quick Look, a generated image, a simulated template, or any other unverified substitute. Do not deliver the manuscript as complete.
 
-Do not use `qlmanage` or Quick Look thumbnails for the final cover image. Quick Look can render this template incorrectly as black and white. Use PowerPoint's actual display plus screenshot/cropping, or another method that has been visually checked against PowerPoint.
+Do not use `qlmanage` or Quick Look thumbnails for the final cover image. Quick Look can render this template incorrectly as black and white. Use PowerPoint's actual display plus screenshot/cropping only, unless the user explicitly approves a different workflow after a blocker is reported.
+
+Stop-and-ask conditions:
+
+- `assets/封面模板.pptx` is missing, unreadable, or does not contain a `Title 1` placeholder.
+- Microsoft PowerPoint is unavailable, cannot open the temporary PPTX, or cannot be brought to the foreground.
+- `screencapture` fails because of permissions, display access, or any other error.
+- The screenshot captures the wrong app, the wrong window, a blank display, or an unverified view.
+- The crop includes PowerPoint toolbars, menus, thumbnails, sidebars, notes, or excludes any part of the slide canvas.
+- The title is black, serif, mixed-case, left-aligned, clipped, off-center, or otherwise differs from the blue uppercase bold sans-serif style of a correct existing cover.
+- A colon or semicolon produces paragraph spacing instead of a soft line break.
+- The final PNG is black and white, visually differs from the blue-gray template or a correct existing cover, has clipped or off-center title text, or cannot be visually checked.
+- The Word document cannot be written without overwriting an existing file, cannot embed the verified cover image, or cannot be read back for validation.
+- Any required validation item below cannot be completed.
 
 Validation checklist:
 
 - PowerPoint view shows the blue-gray template.
-- English title is centered in the first slide title area.
+- English title is uppercase, blue, bold sans-serif, and centered in the first slide title area.
+- Title scale and placement visually match the most recent correct cover in `output/cover/`, when one exists.
+- Every colon or semicolon is followed by a soft line break without extra paragraph spacing.
 - Final PNG contains only the slide canvas, not PowerPoint toolbars, menus, sidebars, or notes.
-- Final Word document contains the cover image if requested.
+- Final PNG is the crop of the PowerPoint screenshot, not a substitute rendering.
+- Final Word document contains the cover image.
+- Microsoft Word displays the same verified cover without clipping, stretching, or substitution.
+- Final Word document can be read back and contains the expected English title, Chinese title, intro sentence, Citation label, and DOI or citation text.
 - `output/cover/` contains only the final PNG after cleanup.
 
 ## Browser and Computer Use
