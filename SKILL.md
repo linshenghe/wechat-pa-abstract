@@ -1,17 +1,17 @@
 ---
 name: wechat-pa-abstract
-description: Use when the user provides article metadata, abstract, citation text, or article sections for a Public Administration journal WeChat short-summary or long-summary post, and wants it organized into a fixed bilingual manuscript format, exported as a Word document, or paired with a cover image made from the local PowerPoint cover template.
+description: Use when the user provides Public Administration article metadata, abstract, citation text, a PDF, or article sections, and wants a short-summary or long-summary WeChat manuscript in a fixed bilingual format, exported as a Word document, or paired with a cover image made from the local PowerPoint cover template. Short-summary manuscripts can be created from pasted metadata and abstract alone; long-summary, section-by-section, or PDF-verified manuscripts require the original PDF.
 ---
 
 # WeChat PA Abstract
 
 ## Purpose
 
-Create short or long WeChat manuscript drafts for the Public Administration journal account from user-provided article information, delivered by default as a Word document with a title cover image. The user supplies the article title, authors, abstract, DOI/citation, copied website text, or article sections; do not open the article webpage unless the user explicitly asks.
+Create short or long WeChat manuscript drafts for the Public Administration journal account from user-provided article information, delivered by default as a Word document with a title cover image. For short-summary manuscripts, pasted title, authors, abstract, and citation are sufficient. For long-summary, section-by-section, PDF-verified, or source-text-sensitive manuscripts, require the original article PDF. Do not open the article webpage unless the user explicitly asks.
 
 ## Default Input Assumption
 
-The user provides pasted article information, usually including:
+For short-summary manuscripts, the user usually provides pasted article information, including:
 
 - English title
 - Author names exactly as shown on the website
@@ -19,11 +19,39 @@ The user provides pasted article information, usually including:
 - English abstract
 - Website citation text, preferably APA
 
-If any essential item is missing, ask only for the missing item. Essential items are English title, authors, abstract, and citation.
+For long-summary, section-by-section, PDF-verified, or source-text-sensitive manuscripts, the user must also provide the original article PDF file or local PDF path.
+
+If any essential item is missing, ask only for the missing item. Essential items for short-summary manuscripts are English title, authors, abstract, and citation. Essential items for long-summary, section-by-section, PDF-verified, or source-text-sensitive manuscripts are the original article PDF, English title, authors, abstract, and citation.
 
 When asking for missing items, name only the missing fields in a short checklist. Do not ask the user to paste the whole article again if some fields are already present.
 
 If the user provides multiple articles in one message, treat them as separate manuscripts by default. Do not merge multiple articles into one manuscript unless the user explicitly asks for a combined document.
+
+If the user explicitly asks for a preliminary chat-only long-summary translation from pasted text before providing the PDF, you may help, but mark it as preliminary and do not produce the final long-summary Word manuscript or cover workflow until the original PDF has been provided and verified. This restriction does not apply to short-summary manuscripts based only on the pasted abstract.
+
+## PDF Source Workflow
+
+Use this workflow before drafting any final long-summary, section-by-section, PDF-verified, or source-text-sensitive manuscript. Do not require this workflow for short-summary manuscripts when the user has provided title, authors, abstract, and citation.
+
+1. Confirm that the original article PDF exists, is readable, is not encrypted, and has a plausible page count.
+2. Convert the PDF with `pdfmd` using page breaks, for example:
+
+```bash
+pdfmd "$INPUT_PDF" -o "$TEMP_DIR/article.pdfmd.md" --page-breaks --no-progress --stats
+```
+
+3. Cross-validate the `pdfmd` output structure with `pdftotext -layout`:
+
+```bash
+pdftotext -layout "$INPUT_PDF" "$TEMP_DIR/article.pdftotext.txt"
+```
+
+4. Compare the `pdfmd` Markdown and `pdftotext` extraction for page count, section headings, section boundaries, abstract presence, references boundary, and tables/figures that affect interpretation. Treat `pdfmd` as the main working text, but do not trust its heading detection by itself.
+5. If `pdfmd` misses headings, merges sections, drops important text, or produces suspicious artifacts, use `pdftotext` and direct PDF reading to correct the outline before drafting.
+6. Before final delivery, do a direct PDF review pass with `pdfplumber` page-by-page extraction. Use this only for final content QA: check the completed manuscript against the original PDF for omitted important concepts, section-order errors, mistranslations, and unsupported additions.
+7. Record in the final response which PDF extraction methods were used and any unresolved extraction uncertainty.
+
+If `pdfmd` or `pdftotext` is unavailable, the PDF is unreadable, the page count is implausible, or the structure cross-validation reveals unresolved source-text conflicts, stop and ask the user how to proceed. Do not deliver a long-summary, section-by-section, PDF-verified, or source-text-sensitive final manuscript as verified from pasted text alone.
 
 ## Output Format
 
@@ -110,11 +138,26 @@ When delivering completed files, include a concise checklist in the final respon
 - Do not infer missing DOI, publication date, issue, volume, page range, or author order from memory. Ask for the missing citation detail or state that it is unavailable in the provided text.
 - If the user asks for APA conversion, keep only information supported by the provided text or by a source the user explicitly asked Codex to open.
 
+## Optional Reviewer Agent
+
+For complex, long, theoretical, or terminology-heavy manuscripts, use an independent reviewer agent after the main draft is complete when multi-agent tools are available. The reviewer agent must audit rather than rewrite. Give it the original PDF path, the `pdfmd` Markdown, the `pdftotext` structural extraction, and the draft manuscript; do not give it the main agent's hidden reasoning or expected findings.
+
+Ask the reviewer agent to check:
+
+- Whether the section structure follows the original PDF rather than a forced empirical template.
+- Whether important concepts, mechanisms, distinctions, hypotheses, findings, limitations, or implications were omitted.
+- Whether core terms are translated consistently across title, abstract, long summary, and English matching text.
+- Whether the Chinese condensed text preserves the original reasoning order and avoids unsupported interpretation.
+- Whether the English condensed text matches the Chinese condensed text and remains close to the source without copying full passages.
+- Whether author names, citation details, DOI, and original English abstract are preserved.
+
+Treat reviewer findings as issues to verify against the PDF, not automatic edits. Fix confirmed issues, then rerun the relevant read-back or document validation. If no reviewer agent is used, perform the same translation audit manually and say so in the final validation summary.
+
 ## Long Summary Workflow
 
 Use this workflow when the user asks for a long-summary version, extended abstract, long WeChat manuscript, or asks to process an article section by section.
 
-Do not require the user to provide the whole article at once. Process only the section currently provided. At the end of each step, ask for the next specific section by function, not generically.
+For long-summary work, prefer the PDF Source Workflow over piecemeal pasted sections. Use the `pdfmd` Markdown as the main source, then use the independent extraction and direct PDF pass to correct the section outline. If the user still wants to work section by section, do not require the whole article text to be pasted, but still require the original PDF before final delivery.
 
 For long-summary work in the Social Media For Public Administration workspace, keep a temporary Markdown draft in `tmp/wechat-pa-drafts/` when the task spans multiple sections or turns. Use the same safe shortened title rule as Word filenames. Update the draft after each completed section so the work can resume without reconstructing prior sections from chat history.
 
@@ -136,6 +179,7 @@ For every long-summary section:
 - Do not turn long-summary work into a full translation, and do not compress a substantive section into a single sentence. When the original section is long, preserve the reasoning chain and key findings rather than attempting sentence-by-sentence coverage.
 - First understand or translate the original into Chinese, then condense from that Chinese understanding.
 - Preserve the original reasoning order. Do not reorganize the section into a generic guide such as background, question, contribution, method, and conclusion.
+- For non-empirical, theoretical, essay-style, or review articles, follow the article's actual section structure rather than forcing an empirical sequence such as literature, methods, results, and discussion.
 - Preserve important content when it appears in the original reasoning flow, including research questions, contributions, hypotheses, variable definitions, findings, limitations, policy implications, and future research directions.
 - Avoid guide-like transitions such as `文章首先报告`, `本文接下来介绍`, or `下面说明` unless the original text itself uses that framing.
 - The English condensed text should match the Chinese condensed text and use wording close to the original where possible. It is not a full copy of the original.
@@ -220,18 +264,21 @@ Generate a cover image by default and include it in the Word document. This is a
 Reliable procedure:
 
 1. Copy `assets/封面模板.pptx` to a temporary PPTX; never modify the original template.
-2. Open the temporary PPTX in Microsoft PowerPoint before inserting the title.
-3. Write the uppercased title into the first-slide placeholder named `Title 1` through PowerPoint's `text range` object model. Do not use `python-pptx`, `shape.text`, direct OOXML editing, clipboard paste, or simulated keyboard typing to populate the title; these methods can discard or override the inherited template style.
-4. Use a PowerPoint soft line break (`character id 11`) after each colon or semicolon. Do not create a second paragraph.
-5. Preserve and visually confirm the inherited title style: blue, uppercase, bold sans-serif, horizontally centered, vertically centered, and sized to fit inside the title area. The template must remain blue-gray, not black and white.
-6. Compare the PowerPoint view with the most recent correct cover in `output/cover/`, when one exists. Confirm that title color, font family, weight, capitalization, scale, alignment, background placement, and lower-right circular mark follow the same visual pattern.
-7. Use `screencapture` to capture the PowerPoint screen after permissions are available.
-8. Crop the screenshot to the visible slide canvas and save the final PNG in `output/cover/`.
-9. Insert the final PNG at the top of the Word document.
-10. Open the completed Word document in Microsoft Word and confirm that the embedded cover matches the verified PNG.
-11. Close the temporary PowerPoint file after visual verification and final PNG creation.
-12. Delete only temporary files created during the current run, including temporary PPTX files, PowerPoint lock files, full-screen screenshots, Quick Look previews, and extracted media directories. Keep existing deliverables, old drafts, user files, the final PNG, and the final Word document unless the user asks to remove them.
-13. If PowerPoint, title insertion through the object model, screenshot permissions, frontmost-window control, crop validation, document image insertion, file overwrite checks, or visual verification fail, stop and ask the user how to proceed. Do not use Quick Look, a generated image, a simulated template, or any other unverified substitute. Do not deliver the manuscript as complete.
+2. Start from a clean PowerPoint state when possible. If PowerPoint is already open and AppleScript calls hang, or if the frontmost window is ambiguous, ask the user to close PowerPoint and retry from a fresh launch.
+3. Open the temporary PPTX in Microsoft PowerPoint before inserting the title.
+4. Write the uppercased title by directly addressing the first-slide placeholder named `Title 1` through PowerPoint's object model, using the `shape "Title 1" -> text frame -> text range -> content` path. Do not loop over all shapes to find the title placeholder unless direct addressing fails, because shape enumeration can hang in PowerPoint's AppleScript bridge. Do not use `python-pptx`, `shape.text`, direct OOXML editing, clipboard paste, or simulated keyboard typing to populate the title; these methods can discard or override the inherited template style.
+5. Immediately verify that the title was actually written and saved before taking any screenshot. Prefer reading the temporary PPTX package or PowerPoint object model to confirm that the exact uppercased title is present and the template placeholder text is gone. If the title is not present, fix the PowerPoint write step before continuing.
+6. Use a PowerPoint soft line break (`character id 11`) after each colon or semicolon. Do not create a second paragraph.
+7. Bring PowerPoint to the foreground and check for modal windows, account prompts, Microsoft 365 purchase/login prompts, permission prompts, or other overlays before taking the final screenshot. Close or resolve non-document overlays first; do not treat a screenshot with an overlay as a valid cover source.
+8. Preserve and visually confirm the inherited title style: blue, uppercase, bold sans-serif, horizontally centered, vertically centered, and sized to fit inside the title area. The template must remain blue-gray, not black and white.
+9. Compare the PowerPoint view with the most recent correct cover in `output/cover/`, when one exists. Confirm that title color, font family, weight, capitalization, scale, alignment, background placement, and lower-right circular mark follow the same visual pattern.
+10. Use `screencapture` to capture the PowerPoint screen after permissions are available.
+11. Crop the screenshot to the visible slide canvas and save the final PNG in `output/cover/`.
+12. Insert the final PNG at the top of the Word document.
+13. Open the completed Word document in Microsoft Word and confirm that the embedded cover matches the verified PNG.
+14. Close the temporary PowerPoint file after visual verification and final PNG creation.
+15. Delete only temporary files created during the current run, including temporary PPTX files, PowerPoint lock files, full-screen screenshots, Quick Look previews, and extracted media directories. Keep existing deliverables, old drafts, user files, the final PNG, and the final Word document unless the user asks to remove them.
+16. If PowerPoint, title insertion through the object model, post-write title verification, screenshot permissions, frontmost-window control, modal-window handling, crop validation, document image insertion, file overwrite checks, or visual verification fail, stop and ask the user how to proceed. Do not use Quick Look, a generated image, a simulated template, or any other unverified substitute. Do not deliver the manuscript as complete.
 
 Do not use `qlmanage` or Quick Look thumbnails for the final cover image. Quick Look can render this template incorrectly as black and white. Use PowerPoint's actual display plus screenshot/cropping only, unless the user explicitly approves a different workflow after a blocker is reported.
 
@@ -239,7 +286,10 @@ Stop-and-ask conditions:
 
 - `assets/封面模板.pptx` is missing, unreadable, or does not contain a `Title 1` placeholder.
 - Microsoft PowerPoint is unavailable, cannot open the temporary PPTX, or cannot be brought to the foreground.
+- Direct addressing of `shape "Title 1"` through PowerPoint's object model fails and a reliable object-model fallback cannot be verified.
+- The temporary PPTX cannot be checked after writing, or the check shows that the exact uppercased title is absent.
 - `screencapture` fails because of permissions, display access, or any other error.
+- A modal window, account prompt, Microsoft 365 purchase/login prompt, permission prompt, or other overlay blocks the slide and cannot be closed or resolved.
 - The screenshot captures the wrong app, the wrong window, a blank display, or an unverified view.
 - The crop includes PowerPoint toolbars, menus, thumbnails, sidebars, notes, or excludes any part of the slide canvas.
 - The title is black, serif, mixed-case, left-aligned, clipped, off-center, or otherwise differs from the blue uppercase bold sans-serif style of a correct existing cover.
@@ -251,9 +301,14 @@ Stop-and-ask conditions:
 Validation checklist:
 
 - PowerPoint view shows the blue-gray template.
+- The title was written through direct `shape "Title 1" -> text frame -> text range -> content` PowerPoint object-model addressing, then checked before screenshot capture.
+- For long-summary, section-by-section, PDF-verified, or source-text-sensitive manuscripts: original PDF was provided, converted with `pdfmd`, structurally cross-validated with `pdftotext -layout`, and checked again with `pdfplumber` page-by-page extraction before final delivery.
+- For long-summary, section-by-section, PDF-verified, or source-text-sensitive manuscripts: the final manuscript was checked against the PDF-derived outline for missing important sections, omitted key concepts, section-order errors, mistranslations, and unsupported additions.
+- Translation audit was completed manually or by an independent reviewer agent; confirmed issues were fixed and revalidated.
 - English title is uppercase, blue, bold sans-serif, and centered in the first slide title area.
 - Title scale and placement visually match the most recent correct cover in `output/cover/`, when one exists.
 - Every colon or semicolon is followed by a soft line break without extra paragraph spacing.
+- The final screenshot has no modal windows, account prompts, Microsoft 365 purchase/login prompts, permission prompts, or other overlays blocking the slide.
 - Final PNG contains only the slide canvas, not PowerPoint toolbars, menus, sidebars, or notes.
 - Final PNG is the crop of the PowerPoint screenshot, not a substitute rendering.
 - Final Word document contains the cover image.

@@ -1,7 +1,7 @@
 interface:
   display_name: "WeChat PA Abstract"
-  short_description: "Format Public Administration article abstracts for WeChat"
-  default_prompt: "Use $wechat-pa-abstract to turn my pasted article information into a WeChat manuscript and Word document."
+  short_description: "Build PA WeChat abstract manuscripts"
+  default_prompt: "Use $wechat-pa-abstract with this Public Administration article metadata, abstract, citation, and optional PDF to create a WeChat manuscript and Word document."
 
 policy:
   allow_implicit_invocation: true
