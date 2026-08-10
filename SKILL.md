@@ -9,6 +9,8 @@ Create bilingual manuscripts for the Public Administration WeChat account. Deliv
 
 When the user explicitly requests text only, a draft only, or no Word document, provide chat text and skip the file and cover workflows.
 
+For every completed short summary, long summary, or extended translation, include a concise English delivery email draft in chat by default. Omit it only when the user explicitly opts out. Keep it outside the manuscript.
+
 ## Hard Gates
 
 - For a short summary, require the English title, author names, and English abstract. Treat supported publication metadata as sufficient for a minimum citation; do not block only because volume, issue, or pages are absent.
@@ -105,6 +107,7 @@ Repeat the section structure from the article itself. Do not force a theoretical
 6. Run deterministic document validation.
 7. Open the final document in Microsoft Word and verify the cover, Chinese text, spacing, and pagination. Export a temporary Word PDF for page-by-page QA when practical.
 8. Deliver only the final Word document and cover PNG. Do not expose QA intermediates unless requested.
+9. Include the default English delivery email draft unless the user opted out.
 
 ## Delivery Checklist
 

@@ -1,6 +1,6 @@
 # Delivery Email Drafts
 
-Provide a short English email draft in chat by default for every completed long-summary or extended translation unless the user opts out. For an abstract-only delivery, provide one only when requested. Never insert it into the Word manuscript.
+Provide a short English email draft in chat by default for every completed short summary, long summary, or extended translation. Omit it only when the user explicitly opts out. Never insert it into the Word manuscript.
 
 Keep a slightly warm, concise tone. Do not include the DOI, link, article title, or claims beyond completion and attachment unless requested.
 
@@ -19,7 +19,7 @@ Best regards,
 Linsheng
 ```
 
-Keep `Dear Sarah,`, `Best regards,`, and `Linsheng` unchanged unless the user supplies different names or sign-off. Vary the greeting, completion sentence, and revision invitation naturally when wording is not fixed. Do not vary user-supplied fixed wording.
+Keep `Dear Sarah,`, `Best regards,`, and `Linsheng` unchanged unless the user supplies different names or sign-off. Vary the greeting, completion sentence, and revision invitation naturally for both long-summary and abstract-only deliveries when wording is not fixed. Do not vary user-supplied fixed wording.
 
 Example:
 
@@ -36,7 +36,7 @@ Best regards,
 Linsheng
 ```
 
-For an abstract-only translation:
+For an abstract-only translation, use the same four-block structure. One suitable variation is:
 
 ```text
 Dear Sarah,
