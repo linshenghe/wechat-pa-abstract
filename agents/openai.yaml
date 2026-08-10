@@ -1,7 +1,7 @@
 interface:
   display_name: "WeChat PA Abstract"
   short_description: "Build PA WeChat abstract manuscripts"
-  default_prompt: "Use $wechat-pa-abstract with this Public Administration article metadata, abstract, citation, and optional PDF to create a WeChat manuscript and Word document."
+  default_prompt: "Use $wechat-pa-abstract with this Public Administration article metadata and abstract to create a fixed-format bilingual WeChat manuscript, verified PowerPoint cover, and Word document. Require the original PDF for a final long summary or source-sensitive manuscript."
 
 policy:
   allow_implicit_invocation: true

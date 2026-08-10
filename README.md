@@ -7,6 +7,9 @@ It organizes user-provided article information into a fixed bilingual format, cr
 ## Files
 
 - `SKILL.md`: skill instructions
+- `references/`: long-summary, cover, Word, and delivery-email workflows
+- `scripts/`: deterministic PowerPoint title, short-DOCX build, and DOCX validation helpers
+- `assets/封面模板.pptx`: authoritative PowerPoint cover template
 - `agents/openai.yaml`: Codex UI metadata
 
 ## Install Locally
@@ -16,4 +19,3 @@ Copy this folder into:
 ```text
 ~/.codex/skills/wechat-pa-abstract
 ```
-
