@@ -44,12 +44,14 @@ After the script returns, independently inspect `ppt/slides/slide1.xml`. Confirm
 
 PowerPoint may show `授予文件访问权限` the first time it opens the temporary copy. A stalled AppleScript or an empty presentation count can be caused by this dialog even when the shell command eventually exits without useful output.
 
+Do not request file access proactively. First attempt to open the exact task-local PPTX in PowerPoint. If it opens normally, continue without a permission step. If `授予文件访问权限` actually appears, resolve only that prompt before running the title script.
+
 When the user requested the Word/cover deliverable, resolve this prompt narrowly:
 
 1. Bring PowerPoint to the foreground and inspect the visible dialog.
 2. Select `选择...` and grant access only to the exact task-local temporary PPTX, not its parent directory or the project.
 3. Do not accept unrelated login, purchase, account, or broad permission prompts.
-4. Rerun `write_cover_title.applescript` after access is granted.
+4. Close any empty or ambiguous presentation, then run `write_cover_title.applescript` after access is granted.
 5. Repeat both object-model read-back and package inspection.
 
 If the exact temporary file cannot be granted or verified, stop and ask the user.

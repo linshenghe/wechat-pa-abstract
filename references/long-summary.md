@@ -11,13 +11,17 @@
 
 ## Source Gate
 
-Require the original article PDF for every final long-summary, section-by-section, PDF-verified, or source-sensitive manuscript. A preliminary chat-only translation from pasted text is allowed when explicitly requested, but label it preliminary and do not produce a final Word manuscript or cover until the PDF is verified.
+Classify the supplied source before extraction:
 
-Confirm that the PDF exists, is readable, is not encrypted, and has a plausible page count. If a required extractor is unavailable or source structure remains unresolved, stop and ask the user how to proceed.
+1. **PDF only:** require a readable, unencrypted PDF with a plausible page count and run the full three-stage PDF workflow.
+2. **Complete OA text plus PDF:** use the OA text as the main working source. Use the PDF only to verify metadata, section boundaries, tables or figures, and interpretation-relevant numbers. Do not run all extractors unless a discrepancy remains.
+3. **Pasted text without PDF:** check that the text includes the title and authors, abstract, complete body through the conclusion, and enough metadata for citation. Produce a final long summary when the text is complete and internally coherent. Request the PDF only when the text is incomplete or source-sensitive structure, notes, tables, figures, or numerical evidence remains unresolved.
+
+State the selected source mode in the validation summary. Do not describe a pasted-text manuscript as PDF-verified.
 
 ## Extraction and Cross-Validation
 
-Use the three extractors for distinct purposes:
+For PDF-only work, use the three extractors for distinct purposes:
 
 1. Convert the PDF with `pdfmd` as the main working text:
 
@@ -34,7 +38,7 @@ Use the three extractors for distinct purposes:
 3. Compare page count, headings, section boundaries, abstract, references boundary, and interpretation-relevant tables or figures. Correct `pdfmd` heading mistakes from the structural extraction and direct PDF reading.
 4. Use `pdfplumber` page-by-page only for final content QA. Check the completed manuscript for omitted concepts, section-order errors, mistranslations, and unsupported additions.
 
-Record the methods used and unresolved extraction uncertainty in the final response.
+For complete OA text plus PDF, perform only targeted PDF checks. Record the source mode, checks used, and unresolved uncertainty in the final response.
 
 ## Drafting Rules
 
@@ -60,7 +64,7 @@ Record the methods used and unresolved extraction uncertainty in the final respo
 
 ## Reviewer Audit
 
-For complex, long, theoretical, or terminology-heavy manuscripts, use an independent reviewer agent when multi-agent tools are available. The reviewer must audit rather than rewrite. Provide the original PDF, `pdfmd` output, `pdftotext` structural extraction, and manuscript draft; do not provide hidden reasoning or expected findings.
+For complex, long, theoretical, or terminology-heavy manuscripts, use an independent reviewer agent when multi-agent tools are available. The reviewer must audit rather than rewrite. Provide the available source artifacts for the selected source mode and the manuscript draft; do not provide hidden reasoning or expected findings. For PDF-only work, include the PDF, `pdfmd`, and `pdftotext` outputs. For complete OA text, include that text and only the targeted PDF evidence used.
 
 Ask the reviewer to check:
 
@@ -71,7 +75,7 @@ Ask the reviewer to check:
 - correspondence between Chinese and English condensed text;
 - preservation of names, citation details, DOI, and the original English abstract.
 
-Verify findings against the PDF before editing. Fix confirmed issues and rerun the affected validation. If no reviewer is used, perform the same audit manually and state that in the final validation summary.
+Verify findings against the authoritative source for the selected mode before editing. Fix confirmed issues and rerun the affected validation. If no reviewer is used, perform the same audit manually and state that in the final validation summary.
 
 ## Temporary Drafts
 
@@ -80,7 +84,7 @@ For work spanning sections or turns, keep a task-local Markdown draft:
 - In `/Users/linsheng/Projects/work-pa-wechat-posts`, use `drafts/` for resumable manuscript drafts and `tmp/<safe-title>/` for extraction and QA intermediates.
 - In the legacy Social Media For Public Administration workspace, use `tmp/wechat-pa-drafts/`.
 
-Use the same safe title rule as the Word filename. Update the draft after each completed section. If the user insists on pasted sections, request the next functional section without assuming its heading, but still require the original PDF before final delivery.
+Use the same safe title rule as the Word filename. Update the draft after each completed section. If pasted sections are incomplete, request the next functional section without assuming its heading; request the original PDF only when completeness or source-sensitive evidence cannot otherwise be resolved.
 
 Use these prompts when they match the article's functional sequence:
 

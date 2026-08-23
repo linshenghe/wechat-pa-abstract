@@ -37,9 +37,8 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def main() -> None:
-    args = parse_args()
-    data = json.loads(args.input.read_text(encoding="utf-8"))
+def validate_docx(docx_path: Path, input_path: Path, cover_path: Path) -> dict:
+    data = json.loads(input_path.read_text(encoding="utf-8"))
     expected = {field: str(data.get(field, "")).strip() for field in REQUIRED_FIELDS}
     document_type = str(data.get("document_type", "short")).strip().lower()
     expected_additional_text = [
@@ -47,7 +46,7 @@ def main() -> None:
         for value in data.get("expected_additional_text", [])
         if str(value).strip()
     ]
-    document = Document(args.docx)
+    document = Document(docx_path)
     paragraph_texts = [paragraph.text for paragraph in document.paragraphs]
     full_text = "\n".join(paragraph_texts)
     intro = f'今天为大家带来的是{expected["authors"]}的研究：《{expected["chinese_title"]}》。'
@@ -107,7 +106,7 @@ def main() -> None:
         for run in text_runs
     )
 
-    with ZipFile(args.docx) as archive:
+    with ZipFile(docx_path) as archive:
         names = archive.namelist()
         media = [name for name in names if name.startswith("word/media/")]
         document_xml = archive.read("word/document.xml")
@@ -116,7 +115,7 @@ def main() -> None:
         checks["cover_hash"] = (
             len(media) == 1
             and sha256_bytes(archive.read(media[0]))
-            == sha256_bytes(args.cover.read_bytes())
+            == sha256_bytes(cover_path.read_bytes())
         )
         checks["no_comments"] = not any(
             "/comments" in name or name.endswith("people.xml")
@@ -127,7 +126,12 @@ def main() -> None:
             for tag in ("w:ins", "w:del", "w:moveFrom", "w:moveTo")
         )
 
-    result = {"ok": all(checks.values()), "checks": checks}
+    return {"ok": all(checks.values()), "checks": checks}
+
+
+def main() -> None:
+    args = parse_args()
+    result = validate_docx(args.docx, args.input, args.cover)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if not result["ok"]:
         sys.exit(1)

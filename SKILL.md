@@ -1,6 +1,6 @@
 ---
 name: wechat-pa-abstract
-description: Use when the user provides Public Administration article metadata, an abstract, citation details, article sections, or a PDF and wants a short-summary or long-summary WeChat manuscript, a fixed-format bilingual Word document, or a PowerPoint-template cover. Short summaries may use pasted metadata and abstract alone; long-summary, section-by-section, PDF-verified, and source-sensitive work requires the original PDF.
+description: Use when the user provides Public Administration article metadata, an abstract, complete OA text, article sections, or a PDF and wants a short-summary or long-summary WeChat manuscript, a fixed-format bilingual Word document, or a PowerPoint-template cover. Route complete OA text, PDF-only, and incomplete pasted-text sources differently; require the original PDF only when the text is incomplete, PDF verification is requested, or source-sensitive evidence cannot be resolved from the supplied text.
 ---
 
 # WeChat PA Abstract
@@ -14,7 +14,7 @@ For every completed short summary, long summary, or extended translation, includ
 ## Hard Gates
 
 - For a short summary, require the English title, author names, and English abstract. Treat supported publication metadata as sufficient for a minimum citation; do not block only because volume, issue, or pages are absent.
-- For a final long summary, section-by-section manuscript, PDF-verified manuscript, or source-sensitive translation, require the original readable PDF in addition to the title, authors, and abstract.
+- For a final long summary, first classify the source as PDF-only, complete OA text plus PDF, or pasted text without PDF. Require the original readable PDF only when the supplied text is incomplete, the user requests PDF verification, or source-sensitive structure, tables, figures, notes, or numerical evidence cannot be resolved from the text.
 - Preserve author names exactly. Do not infer author order, DOI, year, volume, issue, pages, or other bibliographic facts from memory.
 - Use the bundled PowerPoint template and Microsoft PowerPoint's actual display for the cover. Do not substitute Quick Look, Keynote, generated images, HTML, PIL-created covers, or direct OOXML title editing.
 - Do not deliver a Word file as complete until Microsoft Word displays the embedded verified cover and the document passes content read-back.
@@ -32,8 +32,9 @@ Read each selected reference completely before acting:
 Use the bundled scripts instead of recreating one-off builders:
 
 - `scripts/write_cover_title.applescript`: write and read back the PowerPoint `Title 1` text range.
-- `scripts/build_short_docx.py`: build the fixed-format short-summary Word document from a JSON input.
+- `scripts/build_docx.py`: build the fixed-format short or long Word document from JSON and, for long summaries, the audited Markdown draft.
 - `scripts/validate_docx.py`: validate required text, one embedded cover, cover hash, fonts, comments, tracked changes, and core metadata.
+- `scripts/final_check.py`: run the one-command final check, including Markdown–Word alignment, recorded Microsoft Word page and word counts, file size, and lock-file checks, without launching Office.
 
 ## Input and Citation Contract
 
@@ -101,11 +102,11 @@ Repeat the section structure from the article itself. Do not force a theoretical
 
 1. Resolve the output mapping and non-overwrite filename before creating files.
 2. Draft and audit the bilingual content.
-3. For long or source-sensitive work, complete the PDF workflow before final drafting.
+3. For long or source-sensitive work, classify the source and complete only the required source-validation branch before final drafting.
 4. Create and verify the cover through PowerPoint.
-5. Build the Word manuscript and embed exactly that verified PNG once.
-6. Run deterministic document validation.
-7. Open the final document in Microsoft Word and verify the cover, Chinese text, spacing, and pagination. Export a temporary Word PDF for page-by-page QA when practical.
+5. Build the Word manuscript with `build_docx.py` and embed exactly that verified PNG once.
+6. Use only Microsoft Word for visual validation. Verify the first page, each section boundary, Chinese–English transitions, cover, spacing, and final page count; use `Cmd+End` to confirm the last page, record Word's page and word counts, then close the document without further edits. Export a temporary PDF from Word only when page-by-page images are needed.
+7. Run `final_check.py` as the single deterministic final check, passing the recorded Word metrics; the script must not launch Office.
 8. Deliver only the final Word document and cover PNG. Do not expose QA intermediates unless requested.
 9. Include the default English delivery email draft unless the user opted out.
 
@@ -117,10 +118,10 @@ In the final response, state:
 - Cover PNG path
 - Whether an email draft was provided
 - Which source and visual validations completed
-- Any unresolved renderer-specific divergence or metadata risk
+- Any unresolved source, Office-permission, visual, or metadata risk
 
-Do not report LibreOffice rendering as a pass when it drops Chinese glyphs. If Microsoft Word and its PDF export display the intended `Songti SC` text correctly, record the LibreOffice result as a renderer-specific diagnostic divergence rather than changing the required typography solely to satisfy LibreOffice.
+Do not run LibreOffice or a generic DOCX renderer for this workflow. Microsoft Word and, when needed, its own PDF export are the only visual authorities for the Word manuscript.
 
 ## Browser and Computer Use
 
-Work from pasted text when provided. Use browser or computer-use tools only when the user asks Codex to fetch a webpage, operate PowerPoint or Word, or inspect an application display. The required PowerPoint and Word verification for a requested file deliverable counts as authorization to operate those applications, but grant file access only to the specific task-local file and do not broaden access.
+Work from supplied complete OA text when provided. Use browser or computer-use tools only when the user asks Codex to fetch a webpage, operate PowerPoint or Word, or inspect an application display. The required PowerPoint and Word verification for a requested file deliverable counts as authorization to operate those applications, but grant file access only to the specific task-local file and do not broaden access.

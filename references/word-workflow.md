@@ -10,7 +10,7 @@ Resolve paths before writing:
 
 Use `WeChat Page Manuscript For "[safe English title]".docx`. Remove unsafe filename characters and limit the title component to 100 characters while preserving the full title inside the manuscript. If the target exists, use ` (Updated)` unless the user explicitly authorizes overwrite.
 
-## Deterministic Short-Summary Build
+## Deterministic Manuscript Build
 
 Use the bundled builder rather than recreating document code. Prepare UTF-8 JSON:
 
@@ -25,16 +25,26 @@ Use the bundled builder rather than recreating document code. Prepare UTF-8 JSON
 }
 ```
 
-Run:
+Use the canonical builder for new work:
 
 ```bash
-python scripts/build_short_docx.py \
+python scripts/build_docx.py \
   --input manuscript.json \
   --cover verified-cover.png \
   --output final.docx
 ```
 
-The script must refuse overwrite, insert the cover once before the English title, and preserve the fixed block order.
+For a long summary, set `"document_type": "long"` in the JSON and pass the audited Markdown directly:
+
+```bash
+python scripts/build_docx.py \
+  --input manuscript.json \
+  --long-summary long-summary.md \
+  --cover verified-cover.png \
+  --output final.docx
+```
+
+The canonical builder must refuse overwrite, insert the cover once before the English title, preserve the fixed opening order, and append the long-summary Markdown after `长摘要：`. Keep `build_short_docx.py` only as a backward-compatible short-summary entrypoint.
 
 ## Typography and Layout
 
@@ -48,33 +58,35 @@ The script must refuse overwrite, insert the cover once before the English title
 
 ## Deterministic Validation
 
-Run:
+Run the one-command final check:
 
 ```bash
-python scripts/validate_docx.py \
+python scripts/final_check.py \
   --docx final.docx \
   --input manuscript.json \
-  --cover verified-cover.png
+  --cover verified-cover.png \
+  --long-summary long-summary.md \
+  --word-pages 8 \
+  --word-words 4591
 ```
 
-Require all checks to pass: expected text, complete DOI or citation, plausible paragraph count, exactly one inline image, embedded-image hash matching the verified PNG, `Songti SC` East Asian font mapping, no comments, no tracked changes, and blank author metadata.
+Replace the example metrics with the values displayed by Microsoft Word during the visual pass. Omit `--long-summary` for a short manuscript. Require all checks to pass: fixed bilingual block order, exact Markdown–Word alignment for long summaries, complete DOI or citation, plausible paragraph count, exactly one inline image, embedded-image hash matching the verified PNG, `Songti SC` East Asian font mapping, no comments, no tracked changes, blank author metadata, non-empty file size, positive recorded Microsoft Word page and word counts, and no task-document lock file. The script must not open or control Office.
 
-For a long manuscript, add `"document_type": "long"` and an `"expected_additional_text"` array containing representative long-summary headings or required claims to the validation JSON. The validator then requires `长摘要：`, additional paragraphs, and every supplied representative string while retaining the same cover, font, revision, comment, and metadata checks.
+`validate_docx.py` remains available as the lower-level structural validator. `final_check.py` is the required delivery gate.
 
 ## Visual Validation Authority
 
-Use the available document skill to render the DOCX and inspect every page. Treat this as a diagnostic pass, not permission to ignore the project-required Microsoft Word check.
+Use only Microsoft Word for visual validation. Do not run LibreOffice or a generic DOCX renderer.
 
-On macOS, LibreOffice may omit Chinese glyphs even when the OOXML correctly specifies `Songti SC`. If that occurs:
+1. Open the final DOCX in Microsoft Word.
+2. Inspect the first page and confirm the verified cover, English title, Chinese title, opening, and Chinese abstract display correctly.
+3. Jump to every numbered section heading and inspect the Chinese–English transition around each section boundary.
+4. Use `Cmd+End` and confirm the status bar reports the expected final page and total page count.
+5. Record the total page count and Word word count for `final_check.py`, then close the document without further edits so no task-document lock remains.
+6. Inspect the final page for clipping, unexpected overflow, or missing text.
+7. Export a temporary PDF from Microsoft Word only when page-by-page images are needed.
 
-1. Record the LibreOffice result as a renderer-specific failure; do not call it a pass.
-2. Do not change required typography solely to satisfy LibreOffice.
-3. Open the final DOCX in Microsoft Word.
-4. Verify the cover, Chinese glyphs, font, fixed block order, spacing, and pagination.
-5. Export a temporary PDF from Microsoft Word and inspect every page when practical.
-6. Treat Microsoft Word plus its PDF export as the final visual authority for this macOS workflow, while disclosing the LibreOffice divergence.
-
-Confirm in Microsoft Word that the cover is not clipped, stretched, or substituted and matches the verified PNG.
+Confirm that the cover is not clipped, stretched, or substituted and matches the verified PNG. Microsoft Word and, when used, its own PDF export are the only visual authorities.
 
 ## Temporary Files
 
