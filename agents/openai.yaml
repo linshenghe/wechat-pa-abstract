@@ -1,7 +1,7 @@
 interface:
   display_name: "WeChat PA Abstract"
   short_description: "Build PA WeChat abstract manuscripts"
-  default_prompt: "Use $wechat-pa-abstract with this Public Administration article source to create a fixed-format bilingual manuscript, verified PowerPoint cover, and Microsoft Word-validated document using the appropriate OA-text or PDF source mode."
+  default_prompt: "Use $wechat-pa-abstract with this Public Administration article source to create a fixed-format bilingual manuscript. By default prepare a reviewable Word manuscript and PowerPoint-derived cover; when local Office tools are available, complete the Word/PowerPoint visual gate, otherwise report visual validation as pending rather than claiming a final package."
 
 policy:
   allow_implicit_invocation: true

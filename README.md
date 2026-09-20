@@ -1,12 +1,12 @@
 # wechat-pa-abstract
 
-Codex skill for producing short and long Public Administration journal WeChat manuscripts.
+Codex/ChatGPT Work skill for producing short and long Public Administration journal WeChat manuscripts.
 
 It organizes user-provided article information into a fixed bilingual format, creates a Word manuscript, and can generate a cover image from the local PowerPoint cover template workflow.
 
 ## Files
 
-- `SKILL.md`: skill instructions
+- `SKILL.md`: shared skill instructions and Work/Codex routing
 - `references/`: long-summary, cover, Word, and delivery-email workflows
 - `scripts/`: deterministic PowerPoint title, short/long DOCX build, recorded Microsoft Word metrics, and one-command final-validation helpers
 - `assets/封面模板.pptx`: authoritative PowerPoint cover template

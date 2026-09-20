@@ -1,6 +1,6 @@
 ---
 name: wechat-pa-abstract
-description: Use when the user provides Public Administration article metadata, an abstract, complete OA text, article sections, or a PDF and wants a short-summary or long-summary WeChat manuscript, a fixed-format bilingual Word document, or a PowerPoint-template cover. Route complete OA text, PDF-only, and incomplete pasted-text sources differently; require the original PDF only when the text is incomplete, PDF verification is requested, or source-sensitive evidence cannot be resolved from the supplied text.
+description: Use when the user provides Public Administration article metadata, an abstract, complete OA text, article sections, or a PDF and wants a short-summary or long-summary WeChat manuscript, a fixed-format bilingual Word document, or a PowerPoint-template cover. Work in Codex or ChatGPT Work, routing by actual local/cloud tools and Office access; keep source completeness, manuscript format, and visual-validation claims explicit.
 ---
 
 # WeChat PA Abstract
@@ -11,6 +11,15 @@ When the user explicitly requests text only, a draft only, or no Word document, 
 
 For every completed short summary, long summary, or extended translation, include a concise English delivery email draft in chat by default. Omit it only when the user explicitly opts out. Keep it outside the manuscript.
 
+## Work-First Routing
+
+This skill can run in Codex or ChatGPT Work. Route by the actual execution environment and available tools, not by the mode name alone. Read [references/work-workflow.md](references/work-workflow.md) when the task is running in Work, may run in the cloud, or needs a resumable multi-stage handoff.
+
+- **Local Work or Codex Local/Worktree:** use the task-local project files and, when authorized and available, Microsoft Word, PowerPoint, and computer-use tools. This is the normal route for a final Word-plus-cover package.
+- **Cloud Work or Codex Cloud:** do not attempt `open -a`, `osascript`, local application shortcuts, or paths that exist only on the user's Mac. Complete source drafting and deterministic file-building stages only when the required tools and inputs are available; classify Office visual validation as pending or blocked and do not claim a final package.
+- Resolve the skill bundle root and the project root separately. Use absolute paths for bundled assets and scripts; never assume the current working directory is the skill folder.
+- Keep Work progress concise and milestone-based: content ready, files built, final gate passed/partial/blocked. Do not expose intermediate logs unless requested.
+
 ## Hard Gates
 
 - For a short summary, require the English title, author names, and English abstract. Treat supported publication metadata as sufficient for a minimum citation; do not block only because volume, issue, or pages are absent.
@@ -18,6 +27,8 @@ For every completed short summary, long summary, or extended translation, includ
 - Preserve author names exactly. Do not infer author order, DOI, year, volume, issue, pages, or other bibliographic facts from memory.
 - Use the bundled PowerPoint template and Microsoft PowerPoint's actual display for the cover. Do not substitute Quick Look, Keynote, generated images, HTML, PIL-created covers, or direct OOXML title editing.
 - Do not deliver a Word file as complete until Microsoft Word displays the embedded verified cover and the document passes content read-back.
+- Standard macOS Office opening is the default path. A transient LaunchServices or Office UI error does not authorize a direct-executable workaround or broad process termination.
+- Before keyboard shortcuts, status-bar reads, or screenshots, confirm the target Office window/document identity and that no blank startup document or modal dialog is frontmost.
 - If a required source, application, permission, write, screenshot, or validation step remains unresolved, stop and ask the user how to proceed. State partial work as partial.
 
 ## Load the Relevant Workflow
@@ -103,12 +114,13 @@ Repeat the section structure from the article itself. Do not force a theoretical
 1. Resolve the output mapping and non-overwrite filename before creating files.
 2. Draft and audit the bilingual content.
 3. For long or source-sensitive work, classify the source and complete only the required source-validation branch before final drafting.
-4. Create and verify the cover through PowerPoint.
-5. Build the Word manuscript with `build_docx.py` and embed exactly that verified PNG once.
-6. Use only Microsoft Word for visual validation. Verify the first page, each section boundary, Chinese–English transitions, cover, spacing, and final page count; use `Cmd+End` to confirm the last page, record Word's page and word counts, then close the document without further edits. Export a temporary PDF from Word only when page-by-page images are needed.
-7. Run `final_check.py` as the single deterministic final check, passing the recorded Word metrics; the script must not launch Office.
-8. Deliver only the final Word document and cover PNG. Do not expose QA intermediates unless requested.
-9. Include the default English delivery email draft unless the user opted out.
+4. Before any Office action, complete the Office preflight in the selected Word/cover reference. Use macOS standard `open -a` or the application object model to open the task-local copy. Do not launch an Office executable directly to bypass LaunchServices, sandbox, or permission problems. If standard opening remains unavailable after a narrow inspection, stop and ask how to proceed.
+5. Create and verify the cover through PowerPoint.
+6. Build the Word manuscript with `build_docx.py` and embed exactly that verified PNG once.
+7. Use only Microsoft Word for visual validation. Verify the first page, each section boundary, Chinese–English transitions, cover, spacing, and final page count; use `Cmd+End` to confirm the last page, record Word's page and word counts, then close the document without further edits. Export a temporary PDF from Word only when page-by-page images are needed.
+8. Run `final_check.py` as the single deterministic final check, passing the recorded Word metrics; the script must not launch Office.
+9. Deliver only the final Word document and cover PNG. Do not expose QA intermediates unless requested.
+10. Include the default English delivery email draft unless the user opted out.
 
 ## Delivery Checklist
 
@@ -118,6 +130,7 @@ In the final response, state:
 - Cover PNG path
 - Whether an email draft was provided
 - Which source and visual validations completed
+- Whether visual validation was complete, partial, or blocked; never infer complete visual validation from `final_check.py` alone.
 - Any unresolved source, Office-permission, visual, or metadata risk
 
 Do not run LibreOffice or a generic DOCX renderer for this workflow. Microsoft Word and, when needed, its own PDF export are the only visual authorities for the Word manuscript.
@@ -125,3 +138,5 @@ Do not run LibreOffice or a generic DOCX renderer for this workflow. Microsoft W
 ## Browser and Computer Use
 
 Work from supplied complete OA text when provided. Use browser or computer-use tools only when the user asks Codex to fetch a webpage, operate PowerPoint or Word, or inspect an application display. The required PowerPoint and Word verification for a requested file deliverable counts as authorization to operate those applications, but grant file access only to the specific task-local file and do not broaden access.
+
+When Word or PowerPoint must be opened, tell the user not to manipulate Office windows or use Office shortcuts during the short open/authorization/screenshot/close phase. Working elsewhere on the computer is fine, but the target Office window must remain untouched until the check is complete.

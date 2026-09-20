@@ -11,7 +11,7 @@
 
 ## Contract
 
-Use `assets/封面模板.pptx`. Copy it to a task-local temporary PPTX and never modify the original. Resolve the final cover directory from `word-workflow.md` and use `WeChat Cover - [safe English title].png`, limiting the title component to 100 characters.
+Use `<SKILL_ROOT>/assets/封面模板.pptx`, where `<SKILL_ROOT>` is the absolute directory containing this skill's `SKILL.md`. The angle-bracket value is explanatory notation, not a literal path. Copy the template to a task-local temporary PPTX and never modify the original. Resolve the final cover directory from `word-workflow.md` and use `WeChat Cover - [safe English title].png`, limiting the title component to 100 characters.
 
 Use the complete uppercased English title as the only cover text. Keep manuscript title capitalization unchanged. Insert a PowerPoint soft line break immediately after every colon or semicolon, including Chinese variants, using character 11 rather than a paragraph break.
 
@@ -19,12 +19,19 @@ Preserve the template's blue-gray design, blue uppercase bold sans-serif title, 
 
 ## Title Insertion
 
-Start from a clean PowerPoint state when possible. If an existing PowerPoint state is ambiguous or the object-model bridge hangs, inspect the application before retrying.
+Start from a clean PowerPoint state when possible. The application-level open performed by the bundled script, or macOS standard `open -a`, is the default opening path. Do not launch the PowerPoint executable directly to bypass LaunchServices or permission problems. If an existing PowerPoint state is ambiguous or the object-model bridge hangs, inspect the application before retrying.
 
-Run the bundled script:
+Before title insertion:
+
+1. Inspect existing PowerPoint processes/windows and identify the target presentation by exact filename.
+2. Close only task-local temporary presentations that are empty or ambiguous; do not quit PowerPoint or batch-kill processes.
+3. If a file-access dialog appears, grant access only to the exact task-local presentation and then confirm that one target presentation remains frontmost.
+4. If the standard application path remains unavailable after a narrow inspection, stop and report the cover check as blocked.
+
+Run the bundled script from its absolute skill path:
 
 ```bash
-osascript scripts/write_cover_title.applescript "$TEMP_PPTX" "$UPPERCASED_TITLE"
+osascript <SKILL_ROOT>/scripts/write_cover_title.applescript "$TEMP_PPTX" "$UPPERCASED_TITLE"
 ```
 
 The script must:
@@ -58,7 +65,7 @@ If the exact temporary file cannot be granted or verified, stop and ask the user
 
 ## Screenshot Capture
 
-Use PowerPoint's actual display. Bring PowerPoint to the foreground, resolve overlays, and run the slide show. Capture a candidate screenshot only after the slide is fully displayed.
+Use PowerPoint's actual display. Bring PowerPoint to the foreground, resolve overlays, and run the slide show. Before starting it, confirm PowerPoint is frontmost, the exact target presentation is active, and no blank presentation or modal dialog is frontmost. Capture a candidate screenshot only after the slide is fully displayed.
 
 PowerPoint slide-show controls may appear at the lower left immediately after launch. Wait for them to disappear, then recapture. Treat the first screenshot as a candidate, not the final image.
 
@@ -92,6 +99,7 @@ Stop and ask the user if any of these remain unresolved:
 - title package inspection fails or soft breaks are wrong;
 - file-access permission cannot be granted narrowly;
 - screenshot permission, foreground control, or slide-show capture fails;
+- the target presentation cannot be identified uniquely or a direct-executable workaround would be required;
 - an overlay cannot be resolved;
 - screenshot contains UI or captures the wrong app/window;
 - title is black, serif, mixed case, left-aligned, clipped, or off-center;

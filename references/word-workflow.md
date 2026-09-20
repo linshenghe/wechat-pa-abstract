@@ -10,6 +10,27 @@ Resolve paths before writing:
 
 Use `WeChat Page Manuscript For "[safe English title]".docx`. Remove unsafe filename characters and limit the title component to 100 characters while preserving the full title inside the manuscript. If the target exists, use ` (Updated)` unless the user explicitly authorizes overwrite.
 
+The current working directory may be a project directory, a Work scratch directory, or a Codex worktree. Resolve the project output root from the applicable project instructions and resolve the skill bundle root separately. In all commands below, `<SKILL_ROOT>` means the absolute directory containing this skill's `SKILL.md`; do not rely on a relative `scripts/` path. The angle-bracket values in the command examples are explanatory placeholders: replace them with the resolved skill path and the Python runtime available in the current environment.
+
+## Office Preflight and Target-Window Control
+
+Before opening the DOCX:
+
+1. Check for existing Word processes/windows, the exact target DOCX, its task-local lock, blank startup documents, and modal dialogs.
+2. If a previous task-local DOCX window is open, close only that exact document without saving. Do not quit Word or batch-kill Office processes.
+3. Open through the macOS standard application path (`open -a` or the equivalent application object model). Do not launch the Word executable directly as a fallback.
+4. If the current task is cloud-hosted or Microsoft Word/computer-use access is unavailable, do not attempt local Office commands. Finish only the non-Office stages that the user requested and report the visual check as pending or blocked.
+5. If the standard local opening path fails, inspect the visible error or permission state once and resolve only a narrow, explicit permission issue for the exact task-local file. If it remains unavailable, stop and report the visual check as blocked.
+
+Before `Cmd+End`, reading status-bar metrics, or taking a screenshot, confirm all of the following:
+
+- exactly one relevant target DOCX window is present;
+- the frontmost title matches the target filename;
+- the document object/window resolves to the same target file;
+- no blank startup document, modal dialog, or unrelated application is frontmost.
+
+If target identity cannot be established, do not use a broad shortcut or capture a screenshot.
+
 ## Deterministic Manuscript Build
 
 Use the bundled builder rather than recreating document code. Prepare UTF-8 JSON:
@@ -28,7 +49,7 @@ Use the bundled builder rather than recreating document code. Prepare UTF-8 JSON
 Use the canonical builder for new work:
 
 ```bash
-python scripts/build_docx.py \
+<available-python> <SKILL_ROOT>/scripts/build_docx.py \
   --input manuscript.json \
   --cover verified-cover.png \
   --output final.docx
@@ -37,7 +58,7 @@ python scripts/build_docx.py \
 For a long summary, set `"document_type": "long"` in the JSON and pass the audited Markdown directly:
 
 ```bash
-python scripts/build_docx.py \
+<available-python> <SKILL_ROOT>/scripts/build_docx.py \
   --input manuscript.json \
   --long-summary long-summary.md \
   --cover verified-cover.png \
@@ -61,7 +82,7 @@ The canonical builder must refuse overwrite, insert the cover once before the En
 Run the one-command final check:
 
 ```bash
-python scripts/final_check.py \
+<available-python> <SKILL_ROOT>/scripts/final_check.py \
   --docx final.docx \
   --input manuscript.json \
   --cover verified-cover.png \
@@ -72,7 +93,7 @@ python scripts/final_check.py \
 
 Replace the example metrics with the values displayed by Microsoft Word during the visual pass. Omit `--long-summary` for a short manuscript. Require all checks to pass: fixed bilingual block order, exact Markdown–Word alignment for long summaries, complete DOI or citation, plausible paragraph count, exactly one inline image, embedded-image hash matching the verified PNG, `Songti SC` East Asian font mapping, no comments, no tracked changes, blank author metadata, non-empty file size, positive recorded Microsoft Word page and word counts, and no task-document lock file. The script must not open or control Office.
 
-`validate_docx.py` remains available as the lower-level structural validator. `final_check.py` is the required delivery gate.
+`validate_docx.py` remains available as the lower-level structural validator; invoke it from `<SKILL_ROOT>/scripts/` when needed. `final_check.py` is the required delivery gate.
 
 ## Visual Validation Authority
 
@@ -87,6 +108,14 @@ Use only Microsoft Word for visual validation. Do not run LibreOffice or a gener
 7. Export a temporary PDF from Microsoft Word only when page-by-page images are needed.
 
 Confirm that the cover is not clipped, stretched, or substituted and matches the verified PNG. Microsoft Word and, when used, its own PDF export are the only visual authorities.
+
+Classify the result explicitly:
+
+- **Complete:** first page and actual final page were visually checked in Word, the cover (if applicable) was visually checked in PowerPoint, and `final_check.py` passed with no task-local lock remaining.
+- **Partial:** structural/semantic checks passed, but one or more required visual views were not checked.
+- **Blocked:** Office opening, permissions, dialogs, or target-window control prevented the required visual check.
+
+Do not claim complete visual validation from `final_check.py` alone. Do not delete a lock file to force a pass; after a controlled close, report any remaining lock as unresolved.
 
 ## Temporary Files
 
