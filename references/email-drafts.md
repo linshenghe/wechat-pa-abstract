@@ -2,7 +2,7 @@
 
 Provide a short English email draft in chat by default for every completed short summary, long summary, or extended translation. Omit it only when the user explicitly opts out. Never insert it into the Word manuscript.
 
-Keep a slightly warm, concise tone. Do not include the DOI, link, article title, or claims beyond completion and attachment unless requested.
+Address the email to Sarah by default. Keep the tone warm, enthusiastic, and concise. Unless requested, omit the DOI, link, and specific article title; do not make claims beyond completion and attachment.
 
 For a long summary or extended translation, preserve these four functional blocks:
 
@@ -26,11 +26,11 @@ Example:
 ```text
 Dear Sarah,
 
-I hope all is well with you!
+I hope you’re having a wonderful week!
 
-I have finished the extended translation and attached it here.
+I’m happy to share that I’ve completed the extended translation and attached it here.
 
-Please feel free to let me know if you would like any changes or revisions. Thank you!
+If you’d like any changes, I’d be delighted to make them. Thanks so much!
 
 Best regards,
 Linsheng
@@ -41,11 +41,11 @@ For an abstract-only translation, use the same four-block structure. One suitabl
 ```text
 Dear Sarah,
 
-I hope you are doing well!
+I hope your week is going well!
 
-I have completed the abstract-only translation, and the file is attached here.
+I’m happy to share that the abstract-only translation is complete, and I’ve attached it here.
 
-Please let me know if there is anything you would like me to revise. Thank you!
+Please let me know if you’d like anything revised—I’d be very happy to help. Thanks so much!
 
 Best regards,
 Linsheng
